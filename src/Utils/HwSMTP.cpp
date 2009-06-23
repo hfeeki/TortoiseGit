@@ -546,8 +546,16 @@ BOOL CHwSMTP::SendSubject()
 	CString m_csToList;
 
 	csSubject += FormatString ( _T("Subject: %s\r\n"), m_csSubject );
-	csSubject += FormatString ( _T("X-Mailer: TortoiseGit\r\nMIME-Version: 1.0\r\nContent-Type: %s; %s boundary=%s\r\n\r\n") , 
-		m_csMIMEContentType, m_csCharSet, m_csPartBoundary );
+
+	if(this->m_StrAryAttach.GetCount() >0)
+	{
+		csSubject += FormatString ( _T("X-Mailer: TortoiseGit\r\nMIME-Version: 1.0\r\nContent-Type: %s; %s boundary=%s\r\n\r\n") , 
+			m_csMIMEContentType, m_csCharSet, m_csPartBoundary );
+	}else
+	{
+		csSubject += FormatString ( _T("X-Mailer: TortoiseGit\r\nMIME-Version: 1.0\r\nContent-Type: %s;") , 
+			m_csMIMEContentType );
+	}
 
 	return Send ( csSubject );
 }
@@ -561,8 +569,11 @@ BOOL CHwSMTP::SendBody()
 		csTemp.Format ( _T("%s\r\n\r\n"), m_csNoMIMEText );
 		csBody += csTemp;
 		
-		csTemp.Format ( _T("--%s\r\n"), m_csPartBoundary );
-		csBody += csTemp;
+		if( this->m_StrAryAttach.GetCount() >0 )
+		{
+			csTemp.Format ( _T("--%s\r\n"), m_csPartBoundary );
+			csBody += csTemp;
+		}
 		
 		csTemp.Format ( _T("Content-Type: text/plain\r\n%sContent-Transfer-Encoding: 7Bit\r\n\r\n"),
 			m_csCharSet );
